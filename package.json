@@ -1,28 +1,19 @@
 {
-  "name": "sweet-home-backend",
+  "name": "sweet-home-counter-backend",
   "version": "1.0.0",
-  "description": "Backend for Sweet Home website to send orders to Discord via webhook",
+  "description": "Backend to track and increment Sweet Home order codes",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server.js"
   },
-  "keywords": [
-    "express",
-    "discord",
-    "webhook",
-    "orders",
-    "sweet-home"
-  ],
-  "author": "Omar Nehad",
-  "license": "MIT",
   "dependencies": {
-    "axios": "^1.7.4",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mongoose": "^8.7.0"
   },
-  "devDependencies": {
-    "nodemon": "^3.1.4"
+  "engines": {
+    "node": ">=18"
   }
 }
