@@ -1,16 +1,14 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 
-dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // ✅ Connect to MongoDB
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://...";
+const mongoURI = process.env.MONGO_URI || "mongodb://mongo:koaHHdJULQbvqcZXyFUSqxrQgVufWXny@mongodb-k7_2.railway.internal:27017";
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
