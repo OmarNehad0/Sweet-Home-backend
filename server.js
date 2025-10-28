@@ -1,46 +1,40 @@
+// server.js
 import express from "express";
-import fetch from "node-fetch";
+import mongoose from "mongoose";
 import cors from "cors";
+import bodyParser from "body-parser";
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(bodyParser.json());
 
-const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1432450837061308458/AYWPCbzDcHKV6Ny-MkfowtNKiNbs3RaAc9GKdaCL3EiTFqBHbxN_ZM91xNcp0iDcCxVp"; // or use bot+channel+token
+// === Connect to MongoDB ===
+const mongoURI = "mongodb://mongo:koaHHdJULQbvqcZXyFUSqxrQgVufWXny@mongodb-k7_2.railway.internal:27017";
+mongoose.connect(mongoURI, { dbName: "sweet_home" })
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch(err => console.error("Mongo Error:", err));
 
-app.post("/order", async (req, res) => {
-  const { name, phone, address, note, items, total } = req.body;
-  if (!name || !phone || !address) return res.status(400).json({ error: "Missing data" });
+// === Schema for tracking the last order number ===
+const counterSchema = new mongoose.Schema({
+  name: String,
+  seq: Number
+});
+const Counter = mongoose.model("Counter", counterSchema);
 
-  const description = items.map(i => `${i.name} × ${i.qty} = ${i.price * i.qty} EGP`).join("\n");
-
-  const payload = {
-    embeds: [{
-      title: "🧾 طلب جديد من الموقع",
-      color: 0xffcc00,
-      fields: [
-        { name: "👤 الاسم", value: name, inline: true },
-        { name: "📞 الهاتف", value: phone, inline: true },
-        { name: "📍 العنوان", value: address },
-        { name: "🛍️ المنتجات", value: description || "لا يوجد" },
-        { name: "💰 الإجمالي", value: `${total} EGP`, inline: true },
-        { name: "📝 ملاحظات", value: note || "بدون" }
-      ],
-      timestamp: new Date().toISOString()
-    }]
-  };
-
+// === API endpoint to get next order code ===
+app.get("/api/next-order", async (req, res) => {
   try {
-    await fetch(DISCORD_WEBHOOK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    res.json({ success: true });
+    const counter = await Counter.findOneAndUpdate(
+      { name: "order_code" },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    res.json({ code: counter.seq });
   } catch (err) {
-    res.status(500).json({ error: "Discord error" });
+    console.error(err);
+    res.status(500).json({ error: "Failed to get next order code" });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
