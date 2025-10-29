@@ -36,12 +36,12 @@ app.get("/api/next-order", async (req, res) => {
   try {
     const { type, branch } = req.query;
 
-    // Different counters based on type & branch
-    let counterKey = "normalOrders";
-
-    if (type === "ramadan" && branch) {
-      counterKey = `ramadan_branch_${branch}`;
+    if (!branch || !type) {
+      return res.status(400).json({ error: "Missing branch or type" });
     }
+
+    // كل فرع له كاونتر منفصل لكل نوع
+    const counterKey = `${type}_branch_${branch}`;
 
     const nextCode = await getNextCode(counterKey);
     res.json({ code: nextCode });
@@ -50,6 +50,7 @@ app.get("/api/next-order", async (req, res) => {
     res.status(500).json({ error: "Failed to generate order code" });
   }
 });
+
 
 app.get("/", (req, res) => {
   res.send("Sweet Home Counter Backend is running 🚀");
